@@ -8,14 +8,14 @@ The plugin will add a babel with `@lingui/babel-plugin-lingui-macro` to your bun
 
 Plugin will process only files where macro import is found.
 
-If you already have babel or SWC in your esbuild pipeline consider to use `@lingui/babel-plugin-lingui-macro` or
+If you already have babel or SWC in your pipeline consider to use `@lingui/babel-plugin-lingui-macro` or
 `@lingui/swc-plugin` directly.
 
 ## Installation
 
 ```sh
-npm install --save-dev bun-plugin-lingui-macro
-# bun add --dev bun-plugin-lingui-macro
+bun add --dev bun-plugin-lingui-macro
+# npm install --save-dev bun-plugin-lingui-macro
 # yarn add --dev bun-plugin-lingui-macro
 ```
 
@@ -25,10 +25,10 @@ npm install --save-dev bun-plugin-lingui-macro
 import { pluginLinguiMacro } from "bun-plugin-lingui-macro";
 
 await Bun.build({
-  plugins: [bunPluginLinguiMacro()],
+  plugins: [pluginLinguiMacro()],
 });
 ```
 
 ## License
 
-This package is licensed under [MIT][license] license.
+This package is licensed under MIT license.
