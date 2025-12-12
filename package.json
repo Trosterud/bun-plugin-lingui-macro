@@ -1,0 +1,47 @@
+{
+  "name": "bun-plugin-lingui-macro",
+  "version": "1.0.0",
+  "description": "bun plugin to compile Lingui macro",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "MIT",
+  "keywords": [
+    "bun",
+    "bun-plugin",
+    "lingui",
+    "macro"
+  ],
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "dependencies": {
+    "@babel/core": "^7.28.5",
+    "@lingui/babel-plugin-lingui-macro": "^5.6.1"
+  },
+  "devDependencies": {
+    "@types/babel__core": "^7.20.5",
+    "@types/bun": "^1.3.4",
+    "@types/node": "^25.0.1",
+    "prettier": "^3.7.4"
+  },
+  "peerDependencies": {
+    "@lingui/cli": "5.0.0-next.4 - 5",
+    "@lingui/conf": "5.0.0-next.4 - 5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/officialpesonen/bun-plugin-lingui-macro.git"
+  },
+  "packageManager": "bun@1.3.1"
+}
