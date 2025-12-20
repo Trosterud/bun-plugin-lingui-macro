@@ -1,6 +1,6 @@
 {
   "name": "bun-plugin-lingui-macro",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "bun plugin to compile Lingui macro",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
