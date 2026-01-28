@@ -31,6 +31,14 @@ await Bun.build({
 });
 ```
 
+To disable the `.po` file loader:
+
+```ts
+await Bun.build({
+  plugins: [pluginLinguiMacro({ loader: false })],
+});
+```
+
 The plugin will transform Lingui macros in your `.js`/`.ts` files:
 
 ```typescript

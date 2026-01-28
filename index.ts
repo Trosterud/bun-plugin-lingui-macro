@@ -16,6 +16,7 @@ import path from "node:path";
 export type Options = {
   linguiConfig?: LinguiConfigNormalized;
   babelPluginOptions?: LinguiPluginOpts;
+  loader?: boolean;
 };
 
 export const pluginLinguiMacro = (options: Options = {}): BunPlugin => ({
@@ -23,6 +24,7 @@ export const pluginLinguiMacro = (options: Options = {}): BunPlugin => ({
 
   setup(builder) {
     const linguiConfig = options.linguiConfig ?? getConfig({ skipValidation: true });
+    const poLoaderEnabled = options.loader !== false;
 
     builder.onLoad({ filter: babelRe }, async ({ path: filePath }) => {
       const filename = path.relative(process.cwd(), filePath);
@@ -63,14 +65,15 @@ export const pluginLinguiMacro = (options: Options = {}): BunPlugin => ({
       };
     });
 
-    // .po file loader
-    builder.onLoad({ filter: /\.po$/ }, async ({ path: filePath }) => {
-      const catalogRelativePath = path.relative(linguiConfig.rootDir ?? process.cwd(), filePath);
-      const fileCatalog = getCatalogForFile(catalogRelativePath, await getCatalogs(linguiConfig));
+    if (poLoaderEnabled) {
+      builder.onLoad({ filter: /\.po$/ }, async ({ path: filePath }) => {
+        const catalogRelativePath = path.relative(linguiConfig.rootDir ?? process.cwd(), filePath);
+        const fileCatalog = getCatalogForFile(catalogRelativePath, await getCatalogs(linguiConfig));
 
-      if (!fileCatalog) {
-        const catalogPaths = linguiConfig.catalogs?.map((c) => c.path).join("\n") ?? "No catalogs configured";
-        throw new Error(`Requested resource ${catalogRelativePath} is not matched to any of your catalogs paths specified in "lingui.config".
+        if (!fileCatalog) {
+          const catalogPaths =
+            linguiConfig.catalogs?.map((c) => c.path).join("\n") ?? "No catalogs configured";
+          throw new Error(`Requested resource ${catalogRelativePath} is not matched to any of your catalogs paths specified in "lingui.config".
 
 Resource: ${filePath}
 
@@ -81,30 +84,52 @@ Working dir:
 ${process.cwd()}
 
 Please check that \`catalogs.path\` is filled properly.`);
-      }
+        }
 
-      const { locale, catalog } = fileCatalog;
-      const { messages } = await catalog.getTranslations(locale ?? "en", {
-        fallbackLocales: linguiConfig.fallbackLocales ?? {},
-        sourceLocale: linguiConfig.sourceLocale ?? "en",
+        const { locale, catalog } = fileCatalog;
+
+        if (!locale) {
+          throw new Error(
+            `Lingui catalog locale could not be resolved for ${filePath}. Check your catalogs configuration.`
+          );
+        }
+
+        const fallbackLocales = linguiConfig.fallbackLocales;
+        if (fallbackLocales == null) {
+          throw new Error(
+            `Lingui config is missing fallbackLocales for ${filePath}. Set "fallbackLocales" in your lingui config.`
+          );
+        }
+
+        const sourceLocale = linguiConfig.sourceLocale;
+        if (sourceLocale == null) {
+          throw new Error(
+            `Lingui config is missing sourceLocale for ${filePath}. Set "sourceLocale" in your lingui config.`
+          );
+        }
+
+        const { messages } = await catalog.getTranslations(locale, {
+          fallbackLocales,
+          sourceLocale,
+        });
+
+        const strict = process.env.NODE_ENV !== "production";
+        const { source: code, errors } = createCompiledCatalog(locale, messages, {
+          strict,
+          namespace: "es",
+          pseudoLocale: linguiConfig.pseudoLocale,
+        });
+
+        if (errors.length > 0) {
+          const message = createCompilationErrorMessage(locale, errors);
+          console.warn(`Lingui compilation warnings for ${filePath}:\n${message}`);
+        }
+
+        return {
+          contents: code,
+          loader: "js",
+        };
       });
-
-      const strict = process.env.NODE_ENV !== "production";
-      const { source: code, errors } = createCompiledCatalog(locale ?? "en", messages, {
-        strict,
-        namespace: "es",
-        pseudoLocale: linguiConfig.pseudoLocale ?? "",
-      });
-
-      if (errors.length > 0) {
-        const message = createCompilationErrorMessage(locale ?? "en", errors);
-        console.warn(`Lingui compilation warnings for ${filePath}:\n${message}`);
-      }
-
-      return {
-        contents: code,
-        loader: "js",
-      };
-    });
+    }
   },
 });
