@@ -9,7 +9,6 @@
     "skipLibCheck": true,
     "declaration": true,
     "declarationDir": "./dist",
-    "emitDeclarationOnly": true,
     "outDir": "./dist"
   },
   "include": ["index.ts"],
