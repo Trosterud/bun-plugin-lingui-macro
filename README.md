@@ -21,6 +21,8 @@ bun add --dev bun-plugin-lingui-macro
 
 ## Usage
 
+### Macro Transformation
+
 ```ts
 import { pluginLinguiMacro } from "bun-plugin-lingui-macro";
 
@@ -28,6 +30,56 @@ await Bun.build({
   plugins: [pluginLinguiMacro()],
 });
 ```
+
+To disable the `.po` file loader:
+
+```ts
+await Bun.build({
+  plugins: [pluginLinguiMacro({ loader: false })],
+});
+```
+
+The plugin will transform Lingui macros in your `.js`/`.ts` files:
+
+```typescript
+import { Trans } from "@lingui/macro";
+
+// This will be compiled at build time
+<Trans>Hello World</Trans>
+```
+
+### .po File Loading
+
+The plugin also supports direct imports of `.po` catalog files, eliminating the need for a separate `lingui compile` step:
+
+```typescript
+import { messages as enMessages } from "./locales/en/messages.po";
+import { messages as fiMessages } from "./locales/fi/messages.po";
+
+i18n.load({
+  en: enMessages,
+  fi: fiMessages,
+});
+```
+
+The plugin automatically:
+
+1. Loads the `.po` file using your `lingui.config.js` configuration
+2. Compiles it to JavaScript using Lingui's compiler
+3. Returns an ES module: `export const messages = {...}`
+
+**TypeScript Support:**
+
+Create a `lingui.d.ts` file in your project for proper type checking:
+
+```typescript
+declare module "*.po" {
+  import type { Messages } from "@lingui/core";
+  export const messages: Messages;
+}
+```
+
+This provides type safety and autocomplete for your `.po` imports.
 
 ## License
 
